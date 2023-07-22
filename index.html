@@ -2,34 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>One tap Login App</title>
-    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Google One Tap Authentication Sample</title>
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+
+    <!-- CSS Reset -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+
+    <!-- Milligram CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+    
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
    
+    <script src="/assets/js/main.js"></script>
 </head>
 
 <body>
 
-  
-          <script src="https://accounts.google.com/gsi/client" async defer></script>
-          <script>
-            function handleCredentialResponse(response) {
-              console.log("Encoded JWT ID token: " + response.credential);
-            }
-            window.onload = function () {
-              google.accounts.id.initialize({
-                client_id: "1009336245126-7a1g0qdglr9l7svpusr60h77bps9h6pr.apps.googleusercontent.com",
-                callback: handleCredentialResponse
-              });
-              google.accounts.id.renderButton(
-                document.getElementById("buttonDiv"),
-                { theme: "outline", size: "large" }  // customization attributes
-              );
-              google.accounts.id.prompt(); // also display the One Tap dialog
-            }
-        </script>
-        <div id="buttonDiv"></div> 
+    <div id="no-auth" class="container">
+        <h1 id="welcome">Hello there!</h1>
+        <div id="alternative-login">
+          <p><b>If no prompt appears just click the button bellow to start the authentication flow:</b></p>
+          <div id="buttonDiv"></div>
+        </div>
+
+        <div id="authenticated" style="display:none">
+          <h3>Looks like you have already authenticated yourself!</h3>
+          <p><b>Here is the info I recovered about your profile in your Google account:</b></p>
+          <table id="token-table">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+    </div>
  
-    
 </body>
 </html>
