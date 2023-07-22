@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Google One Tap Authentication Sample</title>
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-   
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google One Tap Authentication</title>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
 
-    <div id="no-auth" class="container">
+    <div>
         <h1 id="welcome">Hello there!</h1>
+
         <div id="alternative-login">
-          <p><b>If no prompt appears just click the button bellow to start the authentication flow:</b></p>
+          <p><b>Aquí muestra el botón de One Tap si no se ha podido logar automáticamente, nosotros querremos mostrarlo, porque si no no puede deslogar, no?</b></p>
           <div id="buttonDiv"></div>
         </div>
 
         <div id="authenticated" style="display:none">
-          <h3>Looks like you have already authenticated yourself!</h3>
-          <p><b>Here is the info I recovered about your profile in your Google account:</b></p>
+          <h3>Aquí muestra los datos de la cuenta Google si se ha podido autenticar</h3>
           <table id="token-table">
             <thead>
               <tr>
@@ -35,16 +36,49 @@
     </div>
  
 <script>
-  window.isAuthenticated = false;
-  window.identity = {};
-  window.token = '';
+  window.isAuthenticated = false;   // variable global que nos dice si se ha podido autenticar o no
+  window.identity = {};             // diccionario con los datos recuperados, ya descodificados desde el token
+  window.token = '';                // token recuperado
 
+  // funciones para decodificar el token devuelto por Google
+  // Source: https://stackoverflow.com/a/47574303/4064162 Answer by user "Rafael Quintela"
+  // token, You can try to decode it by yourself in a webpage like "https://jwt.io/" or "https://jwt.ms/"
+  let b64DecodeUnicode = str =>
+      decodeURIComponent(
+        Array.prototype.map.call(atob(str), c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''));
+
+  let parseJwt = token =>
+      JSON.parse(
+      b64DecodeUnicode(
+        token.split('.')[1].replace('-', '+').replace('_', '/')
+      ));
+
+  // función que trata la respuesta con las credenciales devueltas por Google
   function handleCredentialResponse(response) {
     window.token = response.credential;
     window.identity = parseJwt(response.credential);
     window.isAuthenticated = true;
     showAuthInfo();
   }
+
+  //al cargar la ventana se lanza el proceso de Autenticación
+  window.onload = function () {
+    window.isAuthenticated = false;
+    showAuthInfo();
+    google.accounts.id.initialize({
+        client_id: "1009336245126-7a1g0qdglr9l7svpusr60h77bps9h6pr.apps.googleusercontent.com",
+        callback: handleCredentialResponse,
+        auto_select: true,
+    });
+    google.accounts.id.renderButton(
+        document.getElementById("buttonDiv"),
+        { theme: "outline", size: "large" }     //customization attributes (pdte ver en la documentación)
+    );
+    //google.accounts.id.prompt();    //also display the One Tap dialog , asterisco a ver que pasa
+  }
+
 
   function populateTable() {
     var table = document.getElementById("token-table");
@@ -83,36 +117,8 @@ function showAuthInfo() {
     }
 }
 
-window.onload = function () {
-    window.isAuthenticated = false;
-    showAuthInfo();
-    google.accounts.id.initialize({
-        client_id: "1009336245126-7a1g0qdglr9l7svpusr60h77bps9h6pr.apps.googleusercontent.com",
-        callback: handleCredentialResponse,
-        auto_select: true,
-    });
-    google.accounts.id.renderButton(
-        document.getElementById("buttonDiv"),
-        { theme: "outline", size: "large" }  // customization attributes
-    );
-    google.accounts.id.prompt(); // also display the One Tap dialog
-}
 
 
-// Source: https://stackoverflow.com/a/47574303/4064162 Answer by user "Rafael Quintela"
-// token, You can try to decode it by yourself in a webpage like "https://jwt.io/" or "https://jwt.ms/"
-let b64DecodeUnicode = str =>
-  decodeURIComponent(
-    Array.prototype.map.call(atob(str), c =>
-      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-    ).join(''))
-
-let parseJwt = token =>
-  JSON.parse(
-    b64DecodeUnicode(
-      token.split('.')[1].replace('-', '+').replace('_', '/')
-    )
-  )
 
 </script>
 </body>
